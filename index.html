@@ -316,15 +316,13 @@ function getSentence(name, task) {
 }
 
 function testNotify() {
-    if('serviceWorke' in navigator){
-        navigator.serviceWorker.ready.then(function(reg){
-            reg.showNotification('测试',{
-                body: 'test',
+    navigator.serviceWorker.ready.then(function(reg){
+            reg.showNotification('DeepSeek',{
+                body: '顶部横幅测试',
                 requireInteraction: true
             });
         });
     }
-}
 
 function checkSched() {
   var now = new Date();
