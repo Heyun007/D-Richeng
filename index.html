@@ -61,7 +61,7 @@ body{background:#f0f0f0;display:flex;justify-content:center;padding:8px;font-fam
   <div class="header">
     <div class="header-left">
       <div class="time-display" id="timeDisplay">00:00</div>
-      <button onclick="alert(1)" style="font-size:12px;">测试</button>
+      <button onclick="testNotify()" style="font-size:12px;padding:2px 6px;margin-left:4px;">测试通知</button>
       <div class="avatar">D</div>
       <span class="brand-name">DeepSeek</span>
     </div>
@@ -316,7 +316,12 @@ function getSentence(name, task) {
 }
 
 function testNotify() {
-    alert('JS正常运行,通知被系统拦截了');
+    Notification.requestPermission().then(function(p){
+        alert('通知权限状态：'+p);
+        if (p === 'granted'){
+            new Notification('测试',{body:'顶部横幅'});
+        }
+    }
 }
 
 function checkSched() {
