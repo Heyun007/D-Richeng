@@ -398,20 +398,10 @@ function checkSchedules() {
       if (s.date === todayDate) should = true;
     }
 
-    if (should) {
-      var title = s.name;
-      var body = getSentence(userName, s.name);
-      // 通过SW显示通知
-      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({
-          type: 'notify', title: title, body: body
-        });
-      } else {
-        // 降级用普通通知
-        if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification(title, { body: body });
+    if(should){
+        if('Notification'in window && Notification.permission === 'granted'){
+            new Notification(s.name,{ body:getSentence(userName, s.name) });
         }
-      }
     }
   });
 }
