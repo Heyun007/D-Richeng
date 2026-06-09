@@ -315,14 +315,7 @@ function getSentence(name, task) {
 }
 
 function testNotify() {
-  if ('Notification' in window) {
-    Notification.requestPermission().then(function(p) {
-      if (p === 'granted') new Notification('测试通知', {body: '通知功能正常'});
-      else alert('通知被拒绝');
-    });
-  } else {
-    alert('浏览器不支持通知');
-  }
+    alert('JS正常运行,通知被系统拦截了');
 }
 
 function checkSched() {
