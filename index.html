@@ -354,6 +354,9 @@ function checkSW() {
     alert('不支持SW');
   }
 }
+if('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+}
 render();
 </script>
 </body>
