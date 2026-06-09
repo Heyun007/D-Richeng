@@ -61,13 +61,11 @@ body{background:#f0f0f0;display:flex;justify-content:center;padding:8px;font-fam
   <div class="header">
     <div class="header-left">
       <div class="time-display" id="timeDisplay">00:00</div>
-      <button onclick="testNotify()" style="font-size:12px;padding:2px 4px;">测试通知</button>
       <div class="avatar">D</div>
       <span class="brand-name">DeepSeek</span>
     </div>
     <button class="settings-btn" id="settingsBtn">⚙</button>
   </div>
-
   <div class="modal-overlay" id="settingsModal">
     <div class="modal-box">
       <h3>设置</h3>
@@ -77,7 +75,6 @@ body{background:#f0f0f0;display:flex;justify-content:center;padding:8px;font-fam
       <div class="setting-item"><span class="setting-label">添加名字</span><button id="nameBtn">设置</button></div>
     </div>
   </div>
-
   <div class="modal-overlay" id="nameModal">
     <div class="modal-box">
       <h3>设置名字</h3>
@@ -87,12 +84,10 @@ body{background:#f0f0f0;display:flex;justify-content:center;padding:8px;font-fam
       </div>
     </div>
   </div>
-
   <div class="schedule-area" id="scheduleArea">
     <div class="add-card" id="addCard"><span class="plus">+</span></div>
   </div>
 </div>
-
 <div class="modal-overlay" id="formModal">
   <div class="modal-box">
     <h3 id="formTitle">添加日程</h3>
@@ -111,7 +106,6 @@ body{background:#f0f0f0;display:flex;justify-content:center;padding:8px;font-fam
     <button class="btn-save" id="saveBtn">保存</button>
   </div>
 </div>
-
 <div class="modal-overlay" id="confirmModal">
   <div class="modal-box confirm-box">
     <h3>确认删除？</h3>
@@ -122,618 +116,205 @@ body{background:#f0f0f0;display:flex;justify-content:center;padding:8px;font-fam
     </div>
   </div>
 </div>
-
 <script>
-var schedules = JSON.parse(localStorage.getItem('ds_sched') || '[]');
-var userName = localStorage.getItem('ds_name') || '';
-var pushOn = localStorage.getItem('ds_push') === 'true';
+var schedules = JSON.parse(localStorage.getItem('ds_sched')||'[]');
+var userName = localStorage.getItem('ds_name')||'';
+var pushOn = localStorage.getItem('ds_push')==='true';
 var delIdx = -1;
 
 function timeNow() {
   var d = new Date();
   document.getElementById('timeDisplay').textContent = 
-    String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+    String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
 }
-setInterval(timeNow, 1000);
-timeNow();
+setInterval(timeNow,1000); timeNow();
 
 document.getElementById('settingsBtn').onclick = function() {
   document.getElementById('settingsModal').classList.add('active');
 };
 document.getElementById('settingsModal').onclick = function(e) {
-  if (e.target === this) this.classList.remove('active');
+  if(e.target===this)this.classList.remove('active');
 };
-
 document.getElementById('nameBtn').onclick = function() {
   document.getElementById('nameModal').classList.add('active');
-  document.getElementById('nameInput').value = userName;
+  document.getElementById('nameInput').value=userName;
 };
 document.getElementById('nameModal').onclick = function(e) {
-  if (e.target === this) this.classList.remove('active');
+  if(e.target===this)this.classList.remove('active');
 };
 document.getElementById('saveNameBtn').onclick = function() {
   var v = document.getElementById('nameInput').value.trim();
-  if (v) { userName = v; localStorage.setItem('ds_name', v); }
+  if(v){userName=v;localStorage.setItem('ds_name',v);}
   document.getElementById('nameModal').classList.remove('active');
 };
 
 var toggleEl = document.getElementById('pushToggle');
-if (pushOn) toggleEl.classList.add('on');
+if(pushOn)toggleEl.classList.add('on');
 toggleEl.onclick = function() {
-  pushOn = !pushOn;
-  this.classList.toggle('on', pushOn);
-  localStorage.setItem('ds_push', pushOn);
+  pushOn=!pushOn;this.classList.toggle('on',pushOn);localStorage.setItem('ds_push',pushOn);
 };
 
 function render() {
   var area = document.getElementById('scheduleArea');
   var addCard = area.querySelector('.add-card');
   area.innerHTML = '';
-  schedules.forEach(function(s, i) {
+  schedules.forEach(function(s,i) {
     var div = document.createElement('div');
     div.className = 'schedule-item';
-    var f = '';
-    if (s.freq === 'mon') f = '每周一';
-    else if (s.freq === 'tue') f = '每周二';
-    else if (s.freq === 'wed') f = '每周三';
-    else if (s.freq === 'thu') f = '每周四';
-    else if (s.freq === 'fri') f = '每周五';
-    else if (s.freq === 'sat') f = '每周六';
-    else if (s.freq === 'sun') f = '每周日';
-    else if (s.freq === 'month') f = '每月';
-    else if (s.freq === 'year') f = '每年';
-    else f = s.date || '';
-    div.innerHTML = '<div class="info"><div class="name">' + s.name + '</div><div class="meta">' + s.time + ' ' + f + '</div></div>' +
-      '<div class="right-actions"><div class="action-btns">' +
-      '<button class="edit-btn" data-idx="' + i + '">✎</button>' +
-      '<button class="del-btn" data-idx="' + i + '">✕</button></div>' +
-      '<div class="toggle' + (s.enabled !== false ? ' on' : '') + '" data-idx="' + i + '"></div></div>';
+    var f='';
+    if(s.freq==='mon')f='每周一';else if(s.freq==='tue')f='每周二';else if(s.freq==='wed')f='每周三';
+    else if(s.freq==='thu')f='每周四';else if(s.freq==='fri')f='每周五';else if(s.freq==='sat')f='每周六';
+    else if(s.freq==='sun')f='每周日';else if(s.freq==='month')f='每月';else if(s.freq==='year')f='每年';else f=s.date||'';
+    div.innerHTML = '<div class="info"><div class="name">'+s.name+'</div><div class="meta">'+s.time+' '+f+'</div></div>'+
+      '<div class="right-actions"><div class="action-btns">'+
+      '<button class="edit-btn" data-idx="'+i+'">✎</button>'+
+      '<button class="del-btn" data-idx="'+i+'">✕</button></div>'+
+      '<div class="toggle'+(s.enabled!==false?' on':'')+'" data-idx="'+i+'"></div></div>';
     area.appendChild(div);
-    var startX = 0;
-    div.ontouchstart = function(e) { startX = e.touches[0].clientX; };
-    div.ontouchend = function(e) {
-      var diff = startX - e.changedTouches[0].clientX;
-      if (diff > 40) this.classList.add('swiped');
-      else if (diff < -20) this.classList.remove('swiped');
+    var startX=0;
+    div.ontouchstart=function(e){startX=e.touches[0].clientX;};
+    div.ontouchend=function(e){
+      var diff=startX-e.changedTouches[0].clientX;
+      if(diff>40)this.classList.add('swiped');
+      else if(diff<-20)this.classList.remove('swiped');
     };
   });
   area.appendChild(addCard);
-  document.querySelectorAll('.edit-btn').forEach(function(b) {
-    b.onclick = function() { openForm(parseInt(this.dataset.idx)); };
+  document.querySelectorAll('.edit-btn').forEach(function(b){
+    b.onclick=function(){openForm(parseInt(this.dataset.idx));};
   });
-  document.querySelectorAll('.del-btn').forEach(function(b) {
-    b.onclick = function() { delIdx = parseInt(this.dataset.idx); document.getElementById('confirmModal').classList.add('active'); };
+  document.querySelectorAll('.del-btn').forEach(function(b){
+    b.onclick=function(){delIdx=parseInt(this.dataset.idx);document.getElementById('confirmModal').classList.add('active');};
   });
-  document.querySelectorAll('.schedule-item .toggle').forEach(function(b) {
-    b.onclick = function() {
-      var i = parseInt(this.dataset.idx);
-      schedules[i].enabled = schedules[i].enabled === false ? true : false;
-      localStorage.setItem('ds_sched', JSON.stringify(schedules));
+  document.querySelectorAll('.schedule-item .toggle').forEach(function(b){
+    b.onclick=function(){
+      var i=parseInt(this.dataset.idx);
+      schedules[i].enabled=schedules[i].enabled===false?true:false;
+      localStorage.setItem('ds_sched',JSON.stringify(schedules));
       render();
     };
   });
 }
 
-document.getElementById('addCard').onclick = function() { openForm(null); };
+document.getElementById('addCard').onclick=function(){openForm(null);};
 
-function openForm(data) {
+function openForm(data){
   document.getElementById('formModal').classList.add('active');
-  document.getElementById('editId').value = data ? data.id : '';
-  document.getElementById('formTitle').textContent = data ? '编辑日程' : '添加日程';
-  document.getElementById('taskName').value = data ? data.name : '';
-  document.getElementById('taskTime').value = data ? data.time : '09:00';
-  document.getElementById('taskDate').value = data ? data.date : '';
-  document.querySelectorAll('.freq-btn').forEach(function(b) { b.classList.remove('sel'); });
-  if (data && data.freq) {
-    document.querySelector('.freq-btn[data-val="' + data.freq + '"]').classList.add('sel');
-    document.getElementById('freqVal').value = data.freq;
-  } else {
-    document.getElementById('freqVal').value = '';
-  }
+  document.getElementById('editId').value=data?data.id:'';
+  document.getElementById('formTitle').textContent=data?'编辑日程':'添加日程';
+  document.getElementById('taskName').value=data?data.name:'';
+  document.getElementById('taskTime').value=data?data.time:'09:00';
+  document.getElementById('taskDate').value=data?data.date:'';
+  document.querySelectorAll('.freq-btn').forEach(function(b){b.classList.remove('sel');});
+  if(data&&data.freq){
+    document.querySelector('.freq-btn[data-val="'+data.freq+'"]').classList.add('sel');
+    document.getElementById('freqVal').value=data.freq;
+  }else{document.getElementById('freqVal').value='';}
 }
-document.getElementById('formModal').onclick = function(e) {
-  if (e.target === this) this.classList.remove('active');
-};
-document.querySelectorAll('.freq-btn').forEach(function(b) {
-  b.onclick = function() {
-    if (this.classList.contains('sel')) {
-      this.classList.remove('sel');
-      document.getElementById('freqVal').value = '';
-    } else {
-      document.querySelectorAll('.freq-btn').forEach(function(x) { x.classList.remove('sel'); });
-      this.classList.add('sel');
-      document.getElementById('freqVal').value = this.dataset.val;
+document.getElementById('formModal').onclick=function(e){if(e.target===this)this.classList.remove('active');};
+document.querySelectorAll('.freq-btn').forEach(function(b){
+  b.onclick=function(){
+    if(this.classList.contains('sel')){
+      this.classList.remove('sel');document.getElementById('freqVal').value='';
+    }else{
+      document.querySelectorAll('.freq-btn').forEach(function(x){x.classList.remove('sel');});
+      this.classList.add('sel');document.getElementById('freqVal').value=this.dataset.val;
     }
   };
 });
-document.getElementById('saveBtn').onclick = function() {
-  var id = document.getElementById('editId').value;
-  var name = document.getElementById('taskName').value.trim();
-  var time = document.getElementById('taskTime').value;
-  var date = document.getElementById('taskDate').value;
-  var freq = document.getElementById('freqVal').value;
-  if (!name) { alert('请输入日程名称'); return; }
-  var obj = { name: name, time: time, date: date, freq: freq, enabled: true };
-  if (id) {
-    for (var i = 0; i < schedules.length; i++) {
-      if (schedules[i].id === id) {
-        schedules[i].name = name; schedules[i].time = time; schedules[i].date = date;
-        schedules[i].freq = freq; break;
-      }
-    }
-  } else {
-    obj.id = 's_' + Date.now();
+document.getElementById('saveBtn').onclick=function(){
+  var id=document.getElementById('editId').value;
+  var name=document.getElementById('taskName').value.trim();
+  var time=document.getElementById('taskTime').value;
+  var date=document.getElementById('taskDate').value;
+  var freq=document.getElementById('freqVal').value;
+  if(!name){alert('请输入日程名称');return;}
+  if(id){
+    for(var i=0;i<schedules.length;i++){if(schedules[i].id===id){
+      schedules[i].name=name;schedules[i].time=time;schedules[i].date=date;schedules[i].freq=freq;break;
+    }}
+  }else{
+    var obj={id:'s_'+Date.now(),name:name,time:time,date:date,freq:freq,enabled:true};
     schedules.push(obj);
   }
-  localStorage.setItem('ds_sched', JSON.stringify(schedules));
+  localStorage.setItem('ds_sched',JSON.stringify(schedules));
   document.getElementById('formModal').classList.remove('active');
   render();
 };
-
-document.getElementById('confirmDelBtn').onclick = function() {
-  schedules.splice(delIdx, 1);
-  localStorage.setItem('ds_sched', JSON.stringify(schedules));
-  document.getElementById('confirmModal').classList.remove('active');
-  render();
+document.getElementById('confirmDelBtn').onclick=function(){
+  schedules.splice(delIdx,1);localStorage.setItem('ds_sched',JSON.stringify(schedules));
+  document.getElementById('confirmModal').classList.remove('active');render();
 };
-document.getElementById('cancelDelBtn').onclick = function() {
-  document.getElementById('confirmModal').classList.remove('active');
+document.getElementById('cancelDelBtn').onclick=function(){document.getElementById('confirmModal').classList.remove('active');};
+document.getElementById('confirmModal').onclick=function(e){if(e.target===this)this.classList.remove('active');};
+document.getElementById('backupBtn').onclick=function(){
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify({schedules:schedules,userName:userName,pushOn:pushOn})],{type:'application/json'}));
+  a.download='ds_backup.json';a.click();
 };
-document.getElementById('confirmModal').onclick = function(e) {
-  if (e.target === this) this.classList.remove('active');
-};
-
-document.getElementById('backupBtn').onclick = function() {
-  var data = JSON.stringify({ schedules: schedules, userName: userName, pushOn: pushOn });
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([data], {type: 'application/json'}));
-  a.download = 'ds_backup.json'; a.click();
-};
-document.getElementById('importBtn').onclick = function() {
-  document.getElementById('importInput').click();
-};
-document.getElementById('importInput').onchange = function(e) {
-  var file = e.target.files[0]; if (!file) return;
-  var r = new FileReader();
-  r.onload = function(ev) {
-    try {
-      var d = JSON.parse(ev.target.result);
-      if (d.schedules) { schedules = d.schedules; localStorage.setItem('ds_sched', JSON.stringify(schedules)); }
-      if (d.userName) { userName = d.userName; localStorage.setItem('ds_name', userName); }
-      if (d.pushOn !== undefined) { pushOn = d.pushOn; localStorage.setItem('ds_push', pushOn); }
-      render(); alert('导入成功');
-    } catch(e) { alert('文件格式错误'); }
+document.getElementById('importBtn').onclick=function(){document.getElementById('importInput').click();};
+document.getElementById('importInput').onchange=function(e){
+  var file=e.target.files[0];if(!file)return;
+  var r=new FileReader();
+  r.onload=function(ev){
+    try{
+      var d=JSON.parse(ev.target.result);
+      if(d.schedules){schedules=d.schedules;localStorage.setItem('ds_sched',JSON.stringify(schedules));}
+      if(d.userName){userName=d.userName;localStorage.setItem('ds_name',userName);}
+      if(d.pushOn!==undefined){pushOn=d.pushOn;localStorage.setItem('ds_push',pushOn);}
+      render();alert('导入成功');
+    }catch(e){alert('文件格式错误');}
   };
-  r.readAsText(file);
-  this.value = '';
+  r.readAsText(file);this.value='';
 };
 
-var sentences = [
-  '{{name}}！时间到了哦',
-  '专属小D为您通知~',
-  '叮咚！{{name}}该行动啦',
-  '嘿嘿，{{name}}看这里',
-  '小D提醒您该行动啦',
-  '时间到~别偷懒',
-  '喂喂喂！在吗！',
-  '重要通知！请查收',
-  '小D蹦蹦跳跳来通知！',
-  '您的贴心小D已上线',
-  '{{name}}！快看时间！',
-  '滴滴！{{name}}有提醒',
-  '唔…该行动了',
-  '呼呼~跑腿通知到啦',
-  '专属提醒到了',
-  '{{name}}快别睡了',
-  '午安~记得休息',
-  '夜深了该睡了哦',
-  '小D戳了戳{{name}}',
-  '别忘了今天的事哦',
-  '温柔提醒~加油',
-  '凶巴巴提醒！快！',
-  '爱你不解释，该做事了',
-  '咚咚咚！开门！',
-  '您的DeepSeek提醒您',
-  '小D好想你~快行动',
-  '嘿！看这里看这里',
-  '严肃提醒：请行动',
-  '小D在等你哦',
-  '{{name}}快看窗外',
-  '星星出来了该休息了',
-  '记得喝水！',
-  '小D牌闹钟响了~',
-  '咻~一条通知飞过来',
-  '每天的这个时候提醒你',
-  '乖~该干活了',
-  '您的日程精灵出现了',
-  '{{name}}快放下手机办事！',
-  '小D温馨提示：时间到~',
-  '通知通知！收信！',
-  '{{name}}你好呀~',
-  '别刷了快去看看日程',
-  '叮~您有一份日程待处理',
-  '小D超凶！快行动！',
-  '月亮都困了好梦',
-  '早安~新的一天加油',
-  '中午了记得吃饭',
-  '晚上好今天辛苦啦',
-  '您的DeepSeek拍了拍你',
-  '{{name}}！三秒内回复！',
-  '好啦不闹了该行动了',
-  '滴滴！日程已送达',
-  '今天也很棒哦~快去',
-  '差点忘了提醒你',
-  '时间管理大师上线',
-  '嘿嘿被我抓到摸鱼了',
-  '再不行动我就生气啦',
-  '温和提醒：记得做事',
-  '冲鸭！行动起来！',
-  '小D已就绪！',
-  '滴——请回答',
-  '小D每天都很想你~',
-  '记得按时完成哦',
-  '咳咳请注意查收',
-  '日程本本翻开了',
-  '叮铃铃~接电话',
-  '别发呆啦该行动了',
-  '猜猜现在几点啦',
-  '小D飞鸽传书给你',
-  '立即执行！',
-  '竖起耳朵听好！',
-  '小D拿着喇叭喊！',
-  '快醒醒！时间到啦',
-  '小D在线蹲一个回应',
-  '咣咣咣！开门见日程！',
-  '您的日程已刷新',
-  '每天提醒你是小D的使命',
-  '行动行动行动！',
-  '小D碎碎念：该行动了',
-  '再不行动天就黑了',
-  '阳光提醒：该出发了',
-  '月光提醒：晚安好梦',
-  '春风提醒：该行动了',
-  '咚锵！看过来！',
-  '您的日程已加载完毕',
-  '小D认真提醒：请执行',
-  '时间不等人哦',
-  '一条来自DeepSeek的消息~',
-  '快快快！行动起来！',
-  '小D已到达提醒现场',
-  '该行动了~加油',
-  '一颗小星星掉下来提醒你',
-  '这是重要提醒！',
-  '小D在云朵上喊你',
-  '看这里看这里看这里',
-  '不闹了快去行动',
-  '您的日程闹钟已响起',
-  '请查收今日提醒',
-  '小D轻轻敲了敲你的窗户',
-  '再睡就迟到了！',
-  '冲冲冲！行动起来！',
-  '收到请回答！',
-  '小D发射爱心提醒',
-  '抬头看！时间到了！',
-  '滴——您的DeepSeek提醒到了',
-  '一二三！行动！',
-  '今天的日程提醒已查收',
-  '小D温馨提示：该行动了哟',
-  '小D等你很久啦',
-  '叮叮当~收提醒',
-  '别让日程等你！',
-  '严肃通知：执行日程',
-  '小D撇嘴提醒：快行动',
-  '今天也要元气满满哦',
-  '咻~一个提醒砸中你',
-  '接好！这是你的日程',
-  '小D挠你痒痒提醒',
-  '快看手机屏幕！',
-  '您的DeepSeek正在呼叫',
-  '重要的事说三遍！',
-  '小D蹲在角落提醒',
-  '嘿嘿嘿该行动了',
-  '一条超大声提醒',
-  '小D来了！快接住！',
-  '今天也很棒！快去行动',
-  '小D的每日提醒：加油',
-  '这个世界需要你行动',
-  '滴答！时间到了',
-  '小D呼叫！收到请行动！',
-  '有一条未读消息',
-  '快醒醒别发呆了',
-  '小D用尾巴卷着提醒',
-  '日程到！执行！',
-  '再不做事就亲你！',
-  '您的专属提醒已生成',
-  '小D躲在屏幕后偷看',
-  '今日提醒已送达',
-  '轰隆隆！快行动！',
-  '小D喊你啦！快点！',
-  '小D把日程塞进你手里',
-  '抬头挺胸行动！',
-  '一条闪闪发光的提醒',
-  '好好好快行动~',
-  '小D正在看着你哦',
-  '别磨蹭啦快行动',
-  '小D咳嗽一声提醒',
-  '日程不等人哦！',
-  '您的日程小秘书已上线',
-  '请签收您的日程提醒',
-  '小D张开双臂拦住你提醒',
-  '呼呼~时间到啦',
-  '喂！这里这里！',
-  '今天也要记得哦',
-  '小D转圈圈提醒',
-  '马上行动！乖！',
-  '您的日程已就绪',
-  '小D的提醒来了！',
-  '小D拎着日程追你跑',
-  '行啦行啦快行动',
-  '叮！有一条日程待办',
-  '别让小D等太久！',
-  '小D啪叽贴在屏幕上',
-  '立即执行日程！',
-  '亲爱哒该行动了',
-  '行动时刻到！',
-  '小D打了个滚提醒',
-  '该行动了嘛~求求了',
-  '给了你一个抱抱提醒',
-  '日程日程日程！',
-  '小D悄悄在你耳边说',
-  '日程已刷新请查看',
-  '一条飞吻提醒',
-  '好~去行动吧~',
-  '小D捧着脸盯着你',
-  '该行动了喵~',
-  '小D已经准备好啦！',
-  '叮咚！专属提醒到了',
-  '看看现在几点了！',
-  '小D在屋顶大喊你快行动',
-  '日程重要！',
-  '最可爱的小D提醒你',
-  '不要假装没看见！',
-  '小D塞了一张日程条',
-  '今天也要好好行动哦',
-  '哎呀！时间过了！',
-  '小D发射了一颗提醒心',
-  '立刻马上行动！',
-  '小D看了看时间提醒你',
-  '日程已更新~快看',
-  '咻！一个日程飞向你',
-  '小D正在呼唤你！',
-  '小D端起喇叭：请行动',
-  '该行动了别让小D担心',
-  '一条带爱心的小提醒~',
-  '时间到！冲呀！',
-  '小D踩着小碎步来提醒',
-  '日程已经准备好了！',
-  '您的DeepSeek戳了戳你的脸',
-  '看看日程再看看我',
-  '小D把日程放在你手心',
-  '别玩了！快行动！',
-  '今天的提醒准时到达',
-  '该行动了！小D超认真！',
-  '小D在你耳边悄悄提醒',
-  '快快快行动起来！',
-  '您的贴心小D拍了拍你的肩',
-  '嘿！这里！看屏幕！',
-  '小D一个箭步冲来提醒',
-  '日程到了！请执行！',
-  '小D想提醒你该行动了',
-  '再不行动小D就哭了',
-  '一条强力提醒已抵达',
-  '好~来执行日程吧~',
-  '小D轻轻拍拍你的头',
-  '别跑！你的日程！',
-  '您的DeepSeek托着腮看着你',
-  '该行动了~小D等你哦',
-  '请查收今日提醒',
-  '行动起来别犹豫！',
-  '小D坐着飞船来提醒',
-  '日程提醒加载完毕！',
-  '专属提醒小天使上线~',
-  '时间宝贵快去行动！',
-  '小D用手指戳了戳你',
-  '看这里！重要！',
-  '一条充满爱的提醒已发送',
-  '该行动了！小D看着你哦',
-  '小D蹦起来提醒你看日程',
-  '赶紧的行动起来！',
-  '小D对你说了声该行动了',
-  '日程时间到！别迟到',
-  '小D飞扑过来抱住你提醒',
-  '小D喊你啦收到请回答',
-  '今日份提醒已送达手中',
-  '好呀~该行动了',
-  '小D把日程贴在你额头上',
-  '再磨蹭就亲你！！',
-  '一条响亮的提醒已发出',
-  '快从床上弹起来！',
-  '小D扶着老花镜提醒',
-  '日程小火车开过来了',
-  '小D给了你一个wink提醒',
-  '唔…该去行动了',
-  '小D把日程揉成纸团扔给你',
-  '执行日程！立刻马上！',
-  '一条温柔的提醒飘到你身边',
-  '小D的命令：快去行动！',
-  '小D清了清嗓子提醒',
-  '日程时间到！准备行动！',
-  '您的DeepSeek牵起你的手',
-  '还要小D说几遍~该行动了',
-  '小D嘟着嘴提醒你看日程',
-  '冲鸭！去行动！',
-  '一条超可爱的提醒已送达',
-  '好乖~该去行动了',
-  '小D举起小旗子提醒',
-  '现在立刻行动！',
-  '您的DeepSeek摸了摸你的头',
-  '该行动了哦~小D爱你',
-  '小D把日程叠成纸飞机飞给你',
-  '行动行动行动！重要！',
-  '一条专属提醒已到达',
-  '小D在叫你啦快去行动',
-  '小D放在你手里一颗星星',
-  '日程闹钟已经响了哦',
-  '您的DeepSeek坐下来认真提醒',
-  '该行动了别让小D担心',
-  '小D把日程画成画送给你',
-  '时间飞速流逝快行动！',
-  '一条暖暖的提醒包裹着你',
-  '小D等你行动等了好久',
-  '小D把日程编成花环给你',
-  '不要拖延啦快去行动！',
-  '小D站起来郑重提醒',
-  '好哦~日程已就绪~',
-  '小D吹了一声口哨提醒',
-  '快快快行动吧小D在等你',
-  '一条闪着金光的提醒已降落',
-  '该行动了~小D亲亲你',
-  '小D把日程折成小船飘给你',
-  '别再犹豫了行动起来！',
-  '小D给了你一个拥抱提醒',
-  '日程到！执行命令！',
-  '小D踮起脚尖提醒你看时间',
-  '快动起来别让小D等！',
-  '一条带着花香的消息飘来',
-  '该行动了哦~小D在等',
-  '小D把日程做成星星挂起来',
-  '小D的命令必须执行！',
-  '小D靠在门边提醒你',
-  '该行动了别磨蹭了',
-  '小D跑得气喘吁吁来提醒',
-  '日程已经准备好啦快行动',
-  '一条飞越千山万水的提醒',
-  '好呀~该行动了~冲',
-  '小D做了一个倒立提醒你',
-  '别让小D等太久哦！',
-  '小D递给你一杯咖啡提醒',
-  '日程时间到！请执行！',
-  '小D翻了个跟头提醒',
-  '动起来动起来动起来！',
-  '一条来自云端的消息',
-  '该行动了亲亲抱抱举高高',
-  '小D用魔法变出一行字提醒',
-  '行动行动行动重要！',
-  '小D坐在你对面认真提醒',
-  '好~快行动起来吧~',
-  '小D吹着口哨假装路过提醒',
-  '一个日程正在等待执行！',
-  '一条充满能量的提醒已注入',
-  '该行动了哦~小D爱你哦',
-  '小D把日程做成书签给你',
-  '快从床上起来行动！',
-  '小D站在门口微笑提醒',
-  '时间到了！快！',
-  '小D把日程唱成一首歌',
-  '别懒了！！行动！！',
-  '一条带着暖阳的消息洒下',
-  '该行动了~小D看着呢',
-  '小D把日程刻在树上',
-  '立刻行动起来别磨蹭！',
-  '小D眨了眨眼睛提醒你',
-  '日程出现了！快去执行！',
-  '小D用尾巴扫了扫你的鼻子',
-  '冲鸭冲鸭冲鸭！',
-  '一条棉花糖一样的提醒',
-  '该行动了哦~小D陪着你',
-  '小D把日程写在天上',
-  '赶快行动啦！！！',
-  '小D端着茶杯提醒你看日程',
-  '好~该行动了~温柔版',
-  '小D用泡泡吹出提醒',
-  '不要假装没看到行动！',
-  '一条带着晚安吻的消息',
-  '该行动了~小D的好朋友',
-  '小D把日程卷成画卷展开',
-  '立即执行别找借口！',
-  '小D托着脸颊笑着说该行动了',
-  '日程已解锁！速速执行！',
-  '小D用光速飞到你面前',
-  '行动起来别让小D生气！！',
-  '一条融化了巧克力的消息',
-  '好哦~快去行动吧~',
-  '小D把日程织成围巾给你',
-  '小D的命令不容反抗！',
-  '小D看着手表说时间到了',
-  '行动时间别拖了！',
-  '小D假装摔倒提醒你',
-  '行动行动行动！！！',
-  '一条包裹着月光的消息',
-  '该行动了~小D亲你一口',
-  '小D把日程折成纸鹤放你口袋',
-  '立即行动不得有误！',
-  '小D优雅鞠躬提醒你',
-  '日程正在呼唤你快！',
-  '小D倒挂在天花板上提醒',
-  '别磨蹭了快行动起来！！',
-  '一条带着晨露的消息',
-  '该行动了哦~小D在你身边',
-  '小D把日程装进信封塞给你',
-  '这是命令！去行动！',
-  '小D端着早餐提醒你',
-  '快快快快快日程来了！',
-  '小D躲在窗帘后跳出来提醒',
-  '行动时间到！！！',
-  '一条披着霞光的消息',
-  '好~去行动吧~小D支持你'
-];
+var sentences = ['专属小D为您通知~','叮咚！该行动啦','嘿嘿看这里','小D提醒您该行动啦','时间到~别偷懒','喂喂喂在吗','重要通知请查收','小D蹦蹦跳跳来通知','您的贴心小D已上线','该行动啦加油'];
 
-function getSentence(name, task) {
-  var t = sentences[Math.floor(Math.random() * sentences.length)];
-  return t.replace('{{name}}', name || '用户').replace('{{task}}', task || '执行日程');
+function getSentence(name,task){
+  var t=sentences[Math.floor(Math.random()*sentences.length)];
+  return t.replace('{{name}}',name||'用户').replace('{{task}}',task||'执行日程');
 }
 
-function testNotify() {
-    Notification.requestPermission().then(function(p) {
-        if (p === 'granted') {
-            navigator.serviceWorker.ready.then(function(reg) {
-                reg.showNotification('DeepSeek', {
-                    body: '顶部横幅测试',
-                    repuireInteraction: true
-                });
-            });
-        } else {
-            alert('通知被拒绝了');
-        }
-    });
-}
-
-function checkSched() {
-  var now = new Date();
-  var cur = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
-  var wd = ['sun','mon','tue','wed','thu','fri','sat'][now.getDay()];
-  var td = now.toISOString().slice(0,10);
-  var md = now.getDate(), mn = now.getMonth()+1;
-  schedules.forEach(function(s) {
-    if (s.enabled === false || s.time !== cur) return;
-    var ok = false;
-    if (['mon','tue','wed','thu','fri','sat','sun'].indexOf(s.freq) > -1) { if (s.freq === wd) ok = true; }
-    else if (s.freq === 'month') { if (s.date && parseInt(s.date.slice(8)) === md) ok = true; }
-    else if (s.freq === 'year') { if (s.date && parseInt(s.date.slice(5,7)) === mn && parseInt(s.date.slice(8)) === md) ok = true; }
-    else { if (s.date === td) ok = true; }
-    if (ok) {
-  navigator.serviceWorker.ready.then(function(reg) {
-    reg.showNotification(s.name, {
-      body: getSentence(userName, s.name),
-      requireInteraction: true
-    });
+function testNotify(){
+  Notification.requestPermission().then(function(p){
+    if(p==='granted'){
+      navigator.serviceWorker.ready.then(function(reg){
+        reg.showNotification('DeepSeek',{body:'顶部横幅测试',requireInteraction:true});
+      });
+    }else{alert('通知被拒绝');}
   });
 }
-setInterval(checkSched, 60000);
-checkSched();
 
-function checkSW() {
-  if('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function(regs) {
-        alert('SW数量: ' + regs.length);
-    });
-  } else {
-    alert('不支持SW');
-  }
+function checkSched(){
+  var now=new Date();
+  var cur=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  var wd=['sun','mon','tue','wed','thu','fri','sat'][now.getDay()];
+  var td=now.toISOString().slice(0,10);
+  var md=now.getDate(),mn=now.getMonth()+1;
+  schedules.forEach(function(s){
+    if(s.enabled===false||s.time!==cur)return;
+    var ok=false;
+    if(['mon','tue','wed','thu','fri','sat','sun'].indexOf(s.freq)>-1){if(s.freq===wd)ok=true;}
+    else if(s.freq==='month'){if(s.date&&parseInt(s.date.slice(8))===md)ok=true;}
+    else if(s.freq==='year'){if(s.date&&parseInt(s.date.slice(5,7))===mn&&parseInt(s.date.slice(8))===md)ok=true;}
+    else{if(s.date===td)ok=true;}
+    if(ok){
+      navigator.serviceWorker.ready.then(function(reg){
+        reg.showNotification(s.name,{body:getSentence(userName,s.name),requireInteraction:true});
+      });
+    }
+  });
 }
-if('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
+setInterval(checkSched,60000);checkSched();
+
+if('serviceWorker'in navigator){navigator.serviceWorker.register('sw.js');}
+
+function checkSW(){
+  if('serviceWorker'in navigator){
+    navigator.serviceWorker.getRegistrations().then(function(regs){alert('SW数量: '+regs.length);});
+  }else{alert('不支持SW');}
 }
+
 render();
 </script>
 </body>
