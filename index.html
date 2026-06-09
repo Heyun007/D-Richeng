@@ -70,6 +70,7 @@ body{background:#f0f0f0;display:flex;justify-content:center;padding:8px;font-fam
   <div class="header" id="appHeader">
     <div class="header-left">
       <div class="time-display" id="timeDisplay">00:00</div>
+      <button onclick="test-Notify()"style="font-size:12px;padding:2px 6px;margin-left:4px;">测试</button>
       <div class="avatar" id="avatarD">D</div>
       <span class="brand-name">DeepSeek</span>
     </div>
@@ -409,6 +410,19 @@ function checkSchedules() {
 // 每分钟检查
 setInterval(checkSchedules, 60000);
 checkSchedules();
+function testNotify() {
+  if ('Notification' in window) {
+    Notification.requestPermission().then(function(p) {
+      if (p === 'granted') {
+        new Notification('测试通知', { body: '如果能看到这条，说明通知功能正常' });
+      } else {
+        alert('通知被拒绝了，去浏览器设置里开启');
+      }
+    });
+  } else {
+    alert('你的浏览器不支持通知');
+  }
+}
 // ====== 初始化 ======
 render();
 </script>
