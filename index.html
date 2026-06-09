@@ -370,6 +370,55 @@ async function registerPush() {
 
 // 开启推送时才注册
 if (pushEnabled) registerPush();
+// ====== 推送日程检查 ======
+function checkSchedules() {
+  var now = new Date();
+  var hh = String(now.getHours()).padStart(2, '0');
+  var mm = String(now.getMinutes()).padStart(2, '0');
+  var curTime = hh + ':' + mm;
+  var weekdays = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+  var todayWeek = weekdays[now.getDay()];
+  var todayDate = now.toISOString().slice(0, 10);
+  var monthDay = now.getDate();
+  var month = now.getMonth() + 1;
+
+  schedules.forEach(function(s) {
+    if (s.enabled === false) return;
+    if (s.time !== curTime) return;
+
+    var should = false;
+    if (['mon','tue','wed','thu','fri','sat','sun'].indexOf(s.freq) > -1) {
+      if (s.freq === todayWeek) should = true;
+    } else if (s.freq === 'month') {
+      if (s.date && parseInt(s.date.slice(8)) === monthDay) should = true;
+    } else if (s.freq === 'year') {
+      if (s.date && parseInt(s.date.slice(5,7)) === month && 
+          parseInt(s.date.slice(8)) === monthDay) should = true;
+    } else {
+      if (s.date === todayDate) should = true;
+    }
+
+    if (should) {
+      var title = s.name;
+      var body = getSentence(userName, s.name);
+      // 通过SW显示通知
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'notify', title: title, body: body
+        });
+      } else {
+        // 降级用普通通知
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification(title, { body: body });
+        }
+      }
+    }
+  });
+}
+
+// 每分钟检查
+setInterval(checkSchedules, 60000);
+checkSchedules();
 // ====== 初始化 ======
 render();
 </script>
