@@ -347,6 +347,9 @@ function checkSched() {
 setInterval(checkSched, 60000);
 checkSched();
 
+if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js');
+}
 render();
 </script>
 </body>
