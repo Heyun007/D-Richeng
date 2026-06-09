@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>DeepSeek 日程</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:#f0f0f0;display:flex;justify-content:center;padding:8px;font-family:sans-serif;color:#333;}
+.container{width:100%;max-width:360px;background:#fff;border-radius:18px;padding:24px 12px 16px;box-shadow:0 2px 20px rgba(0,0,0,0.06);min-height:85vh;margin:0 auto;}
+/* 顶部 */
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;margin-top:4px;}
+.header-left{display:flex;align-items:center;gap:10px;}
+.time-display{font-size:15px;font-weight:500;color:#555;min-width:60px;}
+.avatar{width:38px;height:38px;background:#e8e8e8;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:#666;}
+.brand-name{font-size:16px;font-weight:600;color:#444;}
+.settings-btn{background:none;border:none;font-size:22px;color:#888;cursor:pointer;padding:4px;}
+/* 设置弹窗 */
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.3);z-index:9999;justify-content:center;align-items:center;}
+.modal-overlay.active{display:flex;}
+.modal-box{background:#fff;border-radius:16px;padding:20px;width:88%;max-width:320px;box-shadow:0 8px 40px rgba(0,0,0,0.12);}
+.modal-box h3{font-size:16px;margin-bottom:14px;color:#333;}
+.setting-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f0f0f0;}
+.setting-item:last-child{border-bottom:none;}
+.setting-label{font-size:14px;color:#444;}
+.setting-item button{background:#e8e8e8;border:none;padding:6px 14px;border-radius:8px;font-size:13px;color:#333;cursor:pointer;}
+/* 开关 */
+.toggle{width:44px;height:24px;background:#ccc;border-radius:12px;position:relative;cursor:pointer;flex-shrink:0;transition:.25s;}
+.toggle.on{background:#4caf50;}
+.toggle::after{content:'';width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:.25s;}
+.toggle.on::after{left:22px;}
+/* 添加卡片 */
+.add-card{border:2px dashed #ccc;border-radius:12px;padding:16px;display:flex;justify-content:center;align-items:center;cursor:pointer;margin-bottom:8px;}
+.add-card .plus{font-size:28px;color:#999;}
+/* 日程项 */
+.schedule-item{display:flex;align-items:center;justify-content:space-between;padding:12px 8px;background:#f9f9f9;border-radius:10px;margin-bottom:6px;position:relative;overflow:hidden;}
+.schedule-item .info{flex:1;min-width:0;}
+.schedule-item .info .name{font-size:14px;font-weight:500;color:#333;}
+.schedule-item .info .meta{font-size:11px;color:#999;margin-top:2px;}
+.schedule-item .right-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.schedule-item .action-btns{display:none;gap:6px;}
+.schedule-item.swiped .action-btns{display:flex;}
+.action-btns button{width:32px;height:32px;border-radius:50%;border:none;font-size:14px;cursor:pointer;color:#fff;}
+.action-btns .edit-btn{background:#888;}
+.action-btns .del-btn{background:#e74c3c;}
+/* 表单 */
+.form-group{margin-bottom:12px;}
+.form-group label{font-size:13px;color:#666;display:block;margin-bottom:4px;}
+.form-group input,.form-group select{width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:14px;outline:none;}
+.freq-group{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0;}
+.freq-btn{padding:4px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px;cursor:pointer;background:#fff;color:#555;}
+.freq-btn.sel{background:#555;color:#fff;border-color:#555;}
+.btn-save{width:100%;padding:10px;background:#555;color:#fff;border:none;border-radius:10px;font-size:15px;cursor:pointer;margin-top:6px;}
+/* 确认 */
+.confirm-box{text-align:center;}
+.confirm-box p{margin:8px 0 16px;font-size:14px;color:#333;}
+.confirm-box .btn-row{display:flex;gap:10px;}
+.confirm-box .btn-row button{flex:1;padding:8px;border:none;border-radius:8px;font-size:14px;cursor:pointer;}
+.confirm-box .btn-cancel{background:#eee;color:#333;}
+.confirm-box .btn-confirm{background:#e74c3c;color:#fff;}
+/* 名字 */
+.name-input-row{display:flex;gap:8px;align-items:center;}
+.name-input-row input{flex:1;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:14px;outline:none;}
+.name-input-row button{background:#555;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="container" id="app">
+  <!-- 顶部 -->
+  <div class="header" id="appHeader">
+    <div class="header-left">
+      <div class="time-display" id="timeDisplay">00:00</div>
+      <div class="avatar" id="avatarD">D</div>
+      <span class="brand-name">DeepSeek</span>
+    </div>
+    <button class="settings-btn" id="settingsBtn">⚙</button>
+  </div>
+
+  <!-- 设置弹窗 -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-box">
+      <h3>设置</h3>
+      <div class="setting-item"><span class="setting-label">备份数据</span><button id="backupBtn">导出</button></div>
+      <div class="setting-item"><span class="setting-label">从文件导入</span><button id="importBtn">导入</button><input type="file" id="importInput" accept=".json" style="display:none"></div>
+      <div class="setting-item"><span class="setting-label">后台消息推送</span><div class="toggle" id="pushToggle"></div></div>
+      <div class="setting-item"><span class="setting-label">添加名字</span><button id="nameBtn">设置</button></div>
+    </div>
+  </div>
+
+  <!-- 名字弹窗 -->
+  <div class="modal-overlay" id="nameModal">
+    <div class="modal-box">
+      <h3>设置名字</h3>
+      <div class="name-input-row">
+        <input type="text" id="nameInput" placeholder="输入昵称" maxlength="10">
+        <button id="saveNameBtn">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 日程区域 -->
+  <div class="schedule-area" id="scheduleArea">
+    <div class="add-card" id="addCard"><span class="plus">+</span></div>
+  </div>
+</div>
+
+<!-- 表单弹窗 -->
+<div class="modal-overlay" id="formModal">
+  <div class="modal-box">
+    <h3 id="formTitle">添加日程</h3>
+    <input type="hidden" id="editId">
+    <div class="form-group"><label>日程名称</label><input type="text" id="taskName" placeholder="例如：喝水" maxlength="30"></div>
+    <div class="form-group"><label>时间</label><input type="time" id="taskTime" value="09:00"></div>
+    <div class="form-group"><label>日期</label><input type="date" id="taskDate"></div>
+    <div class="form-group"><label>通知频率</label><div class="freq-group" id="freqGroup">
+      <span class="freq-btn" data-val="mon">一</span><span class="freq-btn" data-val="tue">二</span><span class="freq-btn" data-val="wed">三</span>
+      <span class="freq-btn" data-val="thu">四</span><span class="freq-btn" data-val="fri">五</span><span class="freq-btn" data-val="sat">六</span>
+      <span class="freq-btn" data-val="sun">日</span><span class="freq-btn" data-val="month">每月</span><span class="freq-btn" data-val="year">每年</span>
+    </div><input type="hidden" id="freqVal"></div>
+    <button class="btn-save" id="saveScheduleBtn">保存</button>
+  </div>
+</div>
+
+<!-- 确认弹窗 -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box confirm-box">
+    <h3>确认删除？</h3>
+    <p>此操作不可恢复</p>
+    <div class="btn-row">
+      <button class="btn-cancel" id="cancelDelBtn">取消</button>
+      <button class="btn-confirm" id="confirmDelBtn">确认</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ====== 数据 ======
+let schedules = JSON.parse(localStorage.getItem('ds_schedules') || '[]');
+let userName = localStorage.getItem('ds_username') || '';
+let pushEnabled = localStorage.getItem('ds_push') === 'true';
+let delIndex = -1;
+
+// ====== 时间 ======
+function updateTime() {
+  const d = new Date();
+  document.getElementById('timeDisplay').textContent = 
+    String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+setInterval(updateTime, 1000);
+updateTime();
+
+// ====== 设置弹窗 ======
+document.getElementById('settingsBtn').onclick = function() {
+  document.getElementById('settingsModal').classList.add('active');
+};
+document.getElementById('settingsModal').onclick = function(e) {
+  if (e.target === this) this.classList.remove('active');
+};
+
+// ====== 名字弹窗 ======
+document.getElementById('nameBtn').onclick = function() {
+  document.getElementById('nameModal').classList.add('active');
+  document.getElementById('nameInput').value = userName;
+};
+document.getElementById('nameModal').onclick = function(e) {
+  if (e.target === this) this.classList.remove('active');
+};
+document.getElementById('saveNameBtn').onclick = function() {
+  const v = document.getElementById('nameInput').value.trim();
+  if (v) { userName = v; localStorage.setItem('ds_username', v); }
+  document.getElementById('nameModal').classList.remove('active');
+};
+
+// ====== 推送开关 ======
+document.getElementById('pushToggle').onclick = function() {
+  pushEnabled = !pushEnabled;
+  this.classList.toggle('on', pushEnabled);
+  localStorage.setItem('ds_push', pushEnabled);
+};
+if (pushEnabled) document.getElementById('pushToggle').classList.add('on');
+
+// ====== 渲染日程 ======
+function render() {
+  const area = document.getElementById('scheduleArea');
+  const addCard = area.querySelector('.add-card');
+  area.innerHTML = '';
+  schedules.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.className = 'schedule-item';
+    let freqTxt = s.freq === 'mon' ? '每周一' : s.freq === 'tue' ? '每周二' : s.freq === 'wed' ? '每周三' :
+                  s.freq === 'thu' ? '每周四' : s.freq === 'fri' ? '每周五' : s.freq === 'sat' ? '每周六' :
+                  s.freq === 'sun' ? '每周日' : s.freq === 'month' ? '每月' : s.freq === 'year' ? '每年' : (s.date || '');
+    div.innerHTML = '<div class="info"><div class="name">' + s.name + '</div><div class="meta">' + s.time + ' ' + freqTxt + '</div></div>' +
+      '<div class="right-actions"><div class="action-btns">' +
+      '<button class="edit-btn" data-i="' + i + '">✎</button>' +
+      '<button class="del-btn" data-i="' + i + '">✕</button></div>' +
+      '<div class="toggle' + (s.enabled !== false ? ' on' : '') + '" data-i="' + i + '"></div></div>';
+    area.appendChild(div);
+
+    // 左滑
+    let startX = 0;
+    div.ontouchstart = function(e) { startX = e.touches[0].clientX; };
+    div.ontouchend = function(e) {
+      const diff = startX - e.changedTouches[0].clientX;
+      if (diff > 50) this.classList.add('swiped');
+      else if (diff < -30) this.classList.remove('swiped');
+    };
+  });
+  area.appendChild(addCard);
+
+  // 绑定动态按钮
+  document.querySelectorAll('.edit-btn').forEach(function(btn) {
+    btn.onclick = function() { editSchedule(parseInt(this.dataset.i)); };
+  });
+  document.querySelectorAll('.del-btn').forEach(function(btn) {
+    btn.onclick = function() { confirmDel(parseInt(this.dataset.i)); };
+  });
+  document.querySelectorAll('.schedule-item .toggle').forEach(function(tog) {
+    tog.onclick = function() { toggleSchedule(parseInt(this.dataset.i)); };
+  });
+}
+
+// ====== 添加日程弹窗 ======
+document.getElementById('addCard').onclick = function() { openFormModal(null); };
+
+function openFormModal(data) {
+  document.getElementById('formModal').classList.add('active');
+  document.getElementById('editId').value = data ? data.id : '';
+  document.getElementById('formTitle').textContent = data ? '编辑日程' : '添加日程';
+  document.getElementById('taskName').value = data ? data.name : '';
+  document.getElementById('taskTime').value = data ? data.time : '09:00';
+  document.getElementById('taskDate').value = data ? data.date : '';
+  document.querySelectorAll('.freq-btn').forEach(function(b) { b.classList.remove('sel'); });
+  if (data && data.freq) {
+    document.querySelector('.freq-btn[data-val="' + data.freq + '"]').classList.add('sel');
+    document.getElementById('freqVal').value = data.freq;
+  } else {
+    document.getElementById('freqVal').value = '';
+  }
+}
+document.getElementById('formModal').onclick = function(e) {
+  if (e.target === this) this.classList.remove('active');
+};
+
+document.querySelectorAll('.freq-btn').forEach(function(btn) {
+  btn.onclick = function() {
+    if (this.classList.contains('sel')) {
+      this.classList.remove('sel');
+      document.getElementById('freqVal').value = '';
+    } else {
+      document.querySelectorAll('.freq-btn').forEach(function(b) { b.classList.remove('sel'); });
+      this.classList.add('sel');
+      document.getElementById('freqVal').value = this.dataset.val;
+    }
+  };
+});
+
+document.getElementById('saveScheduleBtn').onclick = function() {
+  const id = document.getElementById('editId').value;
+  const name = document.getElementById('taskName').value.trim();
+  const time = document.getElementById('taskTime').value;
+  const date = document.getElementById('taskDate').value;
+  const freq = document.getElementById('freqVal').value;
+  if (!name) { alert('请输入日程名称'); return; }
+  const obj = { name: name, time: time, date: date, freq: freq, enabled: true };
+  if (id) {
+    const idx = schedules.findIndex(function(s) { return s.id === id; });
+    if (idx > -1) schedules[idx] = Object.assign(schedules[idx], obj);
+  } else {
+    obj.id = 's_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+    schedules.push(obj);
+  }
+  localStorage.setItem('ds_schedules', JSON.stringify(schedules));
+  document.getElementById('formModal').classList.remove('active');
+  render();
+};
+
+// ====== 编辑/删除/开关 ======
+function editSchedule(i) { openFormModal(schedules[i]); }
+function confirmDel(i) {
+  delIndex = i;
+  document.getElementById('confirmModal').classList.add('active');
+}
+document.getElementById('confirmDelBtn').onclick = function() {
+  schedules.splice(delIndex, 1);
+  localStorage.setItem('ds_schedules', JSON.stringify(schedules));
+  document.getElementById('confirmModal').classList.remove('active');
+  render();
+};
+document.getElementById('cancelDelBtn').onclick = function() {
+  document.getElementById('confirmModal').classList.remove('active');
+};
+document.getElementById('confirmModal').onclick = function(e) {
+  if (e.target === this) this.classList.remove('active');
+};
+function toggleSchedule(i) {
+  schedules[i].enabled = schedules[i].enabled === false ? true : false;
+  localStorage.setItem('ds_schedules', JSON.stringify(schedules));
+  render();
+}
+
+// ====== 备份/导入 ======
+document.getElementById('backupBtn').onclick = function() {
+  const data = { schedules: schedules, userName: userName, pushEnabled: pushEnabled, version: 1 };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ds_schedule_backup.json';
+  a.click();
+};
+document.getElementById('importBtn').onclick = function() {
+  document.getElementById('importInput').click();
+};
+document.getElementById('importInput').onchange = function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const d = JSON.parse(ev.target.result);
+      if (d.schedules) { schedules = d.schedules; localStorage.setItem('ds_schedules', JSON.stringify(schedules)); }
+      if (d.userName) { userName = d.userName; localStorage.setItem('ds_username', userName); }
+      if (d.pushEnabled !== undefined) { pushEnabled = d.pushEnabled; localStorage.setItem('ds_push', pushEnabled); }
+      render();
+      alert('导入成功');
+    } catch (e) { alert('文件格式错误'); }
+  };
+  reader.readAsText(file);
+  this.value = '';
+};
+
+// ====== 句子库生成器 ======
+var sentenceTemplates = [
+  '{{name}}！时间到了哦','专属小D为您通知~','叮咚！{{name}}该行动啦','嘿嘿，{{name}}看这里','{{name}}！{{name}}！快看！',
+  '小D提醒您该行动啦','时间到~{{name}}别偷懒','{{name}}亲亲，该起床了','喂喂喂！{{name}}在吗！','重要通知！{{name}}请查收',
+  '{{name}}呀，时间跑掉啦','小D蹦蹦跳跳来通知！','{{name}}！再不来就晚啦','滴答滴答~{{name}}看时间','您的贴心小D已上线',
+  '{{name}}该起床啦！！','午安~{{name}}记得休息','夜深了{{name}}该睡了哦','{{name}}！日程提醒来咯','小D戳了戳{{name}}',
+  '{{name}}快看看日程~','滴滴！{{name}}请查收','今日提醒：行动','{{name}}别忘了呀','温柔提醒：加油',
+  '凶巴巴提醒：快！','爱你不解释，该做事啦','咚咚咚！开门！','您的DeepSeek提醒您','小D好想你~快行动',
+  '日程小管家提醒您','嘿！看这里看这里','唔…该行动了','严肃提醒：请立即行动','小D在等你哦',
+  '呼呼~跑腿通知到啦','专属提醒到了','暖阳都晒pp了快起','星星出来了该休息了','记得喝水！'
+];
+
+function genSentence(name, task) {
+  var tpl = sentenceTemplates[Math.floor(Math.random() * sentenceTemplates.length)];
+  return tpl.replace(/\{\{name\}\}/g, name || '用户').replace(/\{\{task\}\}/g, task || '执行日程');
+}
+
+// ====== 通知权限 ======
+if ('Notification' in window && Notification.permission === 'default') {
+  Notification.requestPermission();
+}
+
+// ====== 注册推送 ======
+async function registerPush() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  try {
+    await navigator.serviceWorker.register('sw.js');
+    const sub = await navigator.serviceWorker.ready.then(function(reg) {
+      return reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: 'BMzik6m7nFxbogkxYQ6M3-logfhmiADJrfHsYr2bDWZcVqlWq7Z3tdYhGCdSu2nMVA_Uy8elZcPeyN-S9hmMWs'
+      });
+    });
+    console.log('推送已开启');
+  } catch(e) {
+    console.log('推送注册失败', e);
+  }
+}
+
+// 开启推送时才注册
+if (pushEnabled) registerPush();
+// ====== 初始化 ======
+render();
+</script>
+</body>
+</html>
