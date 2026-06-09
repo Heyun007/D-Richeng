@@ -316,13 +316,19 @@ function getSentence(name, task) {
 }
 
 function testNotify() {
-    navigator.serviceWorker.ready.then(function(reg){
-            reg.showNotification('DeepSeek',{
-                body: '顶部横幅测试',
-                requireInteraction: true
+    Notification.requestPermission().then(function(p) {
+        if (p === 'granted') {
+            navigator.serviceWorker.ready.then(function(reg) {
+                reg.showNotification('DeepSeek', {
+                    body: '顶部横幅测试',
+                    repuireInteraction: ture
+                });
             });
-        });
-    }
+        } else {
+            alert('通知被拒绝了');
+        }
+    });
+}
 
 function checkSched() {
   var now = new Date();
